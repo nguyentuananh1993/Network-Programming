@@ -3,7 +3,14 @@
 #define max 255
 
 int top =-1;
+int topDb=-1;
 char stack[max];
+double stackDb[max];
+
+
+double popDb();
+void pushDb(double num);
+void emptyStackDb();
 
 void infixToPrefix(char infix[max], char prefix[max]);
 void reverse(char array[max]);
@@ -36,30 +43,59 @@ int main(){
 
 
 
-
 void infixToPrefix(char infix[max], char prefix[max]){
 	emptyStack();
 	int i=0,j=0;
 	while(infix[i]!='\0'){
-		if(isOperator(infix[i])==1){
+		if(isOperator(infix[i])!=1){ // if is operand
+			prefix[j++]=infix[i];
+		}else if(infix[i]== '(')
+			push(infix[i]);
+		else if(infix[i]==')'){
+			while(stack[top]!='(')
+				prefix[j++]=pop();
+			top--;
+		}else{
 			while(top!=-1 && prcd(infix[i])<=prcd(stack[top]))
 				prefix[j++]=pop();
 			push(infix[i]);
-		}else if(isOperator(infix[i])!=1) 
-			prefix[j++] = infix[i];
-		else if(infix[i]=='(')
-			push(infix[i]);
-		else if(infix[i]==')'){
-			do{
-				prefix[j]=pop();
-			}while(prefix[j]!='(');
 		}
 		i++;
-	}	
+	}
 	while(top!=-1)
-		prefix[j++]=pop();
+		if(stack[top]!=')' || stack[top]!='(')
+			prefix[j++]=pop();
+		else top--;
 	prefix[j]='\0';
 }
+
+// void infixToPrefix(char infix[max], char prefix[max]){
+// 	emptyStack();
+// 	int i=0,j=0;
+// 	while(infix[i]!='\0'){
+// 		if(isOperator(infix[i])==1){
+// 			if(top!=-1 && infix[i]==')')
+// 				while(stack[top]!='(' )
+// 					prefix[j++]=pop();
+// 			else
+// 			while(top!=-1 && prcd(infix[i])<=prcd(stack[top]))
+// 				prefix[j++]=pop();
+// 			push(infix[i]);
+// 		}else if(isOperator(infix[i])!=1) 
+// 			prefix[j++] = infix[i];
+// 		else if(infix[i]=='(')
+// 			push(infix[i]);
+// 		else if(infix[i]==')'){
+// 			do{
+// 				prefix[j]=pop();
+// 			}while(prefix[j]!='(');
+// 		}
+// 		i++;
+// 	}	
+// 	while(top!=-1)
+// 		prefix[j++]=pop();
+// 	prefix[j]='\0';
+// }
 
 void reverse(char array[max]){
 	int i,j;
@@ -103,6 +139,9 @@ int prcd(char sym){
 		case ')':
 			return 1;
 			break;
+		default:
+			return 0;
+			break;
 	}
 }
 int isNumber(char sym){
@@ -113,7 +152,7 @@ int isNumber(char sym){
 
 int isOperator(char sym){
 	switch(sym) {
-		case '+':
+			case '+':
 	        case '-':
 	        case '*':
 	        case '/':
@@ -131,27 +170,18 @@ int isOperator(char sym){
 double calculator(char prefix[max],double x){
 	int i=0;
 	double val1,val2,sum=0.0;
-	char tmp;
+	double tmp;
 	emptyStack();
 	while(prefix[i]!='\0'){
-		if(isOperator(prefix[i])==0)
-			push(prefix[i]);
+		if(isOperator(prefix[i])!=1){
+			if(prefix[i]!='x')
+				pushDb(prefix[i]-48);
+			else
+				pushDb(x);
+		}
 		else{
-			tmp=pop();
-			if(tmp=='c')
-				val1=sum;
-			else if(tmp=='x'|| tmp=='X')
-				val1=x;
-			else
-				val1=tmp-48;
-			tmp=pop();
-			if(tmp=='c')
-				val2=sum;
-			else if(tmp=='x' || tmp=='X')
-				val2=x;
-			else
-				val2=tmp-48;
-
+			val1=popDb();
+			val2=popDb();
 			switch(prefix[i]){
 				case '+':
 					sum=val1+val2;
@@ -166,10 +196,20 @@ double calculator(char prefix[max],double x){
 					sum = val2/val1;
 					break;
 			}
-			push('c');
+			pushDb(sum);
 		}
 		i++;	
 	}
-	return sum;
+	return popDb();
 }
 
+double popDb(){
+	topDb--;
+	return stackDb[topDb+1];
+}
+void pushDb(double num){
+	stackDb[++topDb]=num;
+}
+void emptyStackDb(){
+	topDb=-1;
+}
