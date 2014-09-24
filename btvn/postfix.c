@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #define max 255
 
 int top =-1;
@@ -7,27 +8,47 @@ int topDb=-1;
 char stack[max];
 double stackDb[max];
 
+typedef struct node_t{
+	char val;
+	struct node_t*left;
+	struct node_t*right;
+}node;
 
+node*stackNd[max];
+int topNd=-1;
+
+//create node
+node*newNode(char a);
+node* createTree(char postfix[max]);
+
+
+
+void infixToPostfix(char infix[max], char postfix[max]);
+void reverse(char array[max]);
+//function with char stack
+char pop();
+void push(char sym);
+void emptyStack();
+//function with double stack
 double popDb();
 void pushDb(double num);
 void emptyStackDb();
 
-void infixToPostfix(char infix[max], char postfix[max]);
-void reverse(char array[max]);
-char pop();
-void push(char sym);
-void emptyStack();
+node*popNd();
+void pushNd(node*nd);
+void emptyStackNd();
+
 int isOperator(char sym);
 int isNumber(char sym);
 int prcd(char sym);
 double calculator(char postfix[max],double x);
-
-
-
-
+double countTree(node*root,double x);
+void printTree(node*root);
 
 int main(){
 	double f;
+	node*root;
+	double a;
 	char infix[max], postfix[max],temp;
 	printf("Enter f(x) operator: ");
 	scanf("%s",infix);
@@ -36,8 +57,13 @@ int main(){
 	infixToPostfix(infix,postfix);
 	printf("in Reverse Polish notation: ");
 	puts(postfix);
-	f=calculator(postfix,f);
-	printf("The result: %0.1lf\n",f);
+	printf("The result: %0.1lf\n",calculator(postfix,f));
+	root=createTree(postfix);
+	printf("print Tree: ");
+	printTree(root);
+	printf("\n");
+	printf("The result is using Binary Expression: ");
+	printf("%0.1lf\n",countTree(root,f));
 }
 
 
@@ -143,7 +169,7 @@ double calculator(char postfix[max],double x){
 	int i=0;
 	double val1,val2,sum=0.0;
 	double tmp;
-	emptyStack();
+	emptyStackNd();
 	while(postfix[i]!='\0'){
 		if(isOperator(postfix[i])!=1){
 			if(postfix[i]!='x')
@@ -184,4 +210,96 @@ void pushDb(double num){
 }
 void emptyStackDb(){
 	topDb=-1;
+}
+
+node*newNode(char a){
+	node*tmp=(node*)malloc(sizeof(node));
+	tmp->left=NULL;
+	tmp->right=NULL;
+	tmp->val=a;
+	return tmp;
+}
+node*popNd(){
+	topNd--;
+	return stackNd[topNd+1];
+}
+void pushNd(node*nd){
+	topNd++;
+	stackNd[topNd]=nd;
+}
+
+node* createTree(char postfix[max]){
+	node*root;
+	node*tmp;
+	int i=0;
+	node* val1,*val2;
+	while(postfix[i]!='\0'){
+		if(isOperator(postfix[i])!=1){
+			if(postfix[i]!='x'){
+				tmp=newNode(postfix[i]);
+				pushNd(tmp);
+			}else{
+				tmp=newNode('x');
+				pushNd(tmp);
+			}
+		}
+		else{
+			val1=popNd();
+			val2=popNd();
+			switch(postfix[i]){
+				case '+':
+					root=newNode('+');
+					root->left=val2;
+					root->right=val1;
+					break;
+				case '-':
+					root=newNode('-');
+					root->left=val2;
+					root->right=val1;
+					break;
+				case '*':
+					root=newNode('*');
+					root->left=val2;
+					root->right=val1;
+					break;
+				case '/':
+					root=newNode('/');
+					root->left=val2;
+					root->right=val1;
+					break;
+			}
+			pushNd(root);
+		}
+		i++;	
+	}
+	return root;
+}
+
+double countTree(node*root, double x){
+	if(root->left!=NULL && root->right!=NULL)
+		switch(root->val){
+			case '+': return countTree(root->left,x) + countTree(root->right,x);
+			case '-': return countTree(root->left,x) - countTree(root->right,x);
+			case '*': return countTree(root->left,x) * countTree(root->right,x);
+			case '/': return countTree(root->left,x) / countTree(root->right,x);
+		}
+	else if(root->left!=NULL && root->right==NULL)
+		return countTree(root->left,x);
+	else if(root->left==NULL && root->right!=NULL)
+		return countTree(root->right,x);
+	else if(root->left==NULL && root->right==NULL){
+		if(root->val=='x')
+			return x;
+		else return root->val-48;
+	}
+}
+void printTree(node*root){
+	if(root!=NULL){
+		printTree(root->left);
+		printTree(root->right);
+		printf("%c",root->val);
+	}
+}
+void emptyStackNd(){
+	topNd=-1;
 }
