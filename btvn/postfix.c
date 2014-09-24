@@ -12,7 +12,7 @@ double popDb();
 void pushDb(double num);
 void emptyStackDb();
 
-void infixToPrefix(char infix[max], char prefix[max]);
+void infixToPostfix(char infix[max], char postfix[max]);
 void reverse(char array[max]);
 char pop();
 void push(char sym);
@@ -20,7 +20,7 @@ void emptyStack();
 int isOperator(char sym);
 int isNumber(char sym);
 int prcd(char sym);
-double calculator(char prefix[max],double x);
+double calculator(char postfix[max],double x);
 
 
 
@@ -28,74 +28,46 @@ double calculator(char prefix[max],double x);
 
 int main(){
 	double f;
-	char infix[max], prefix[max],temp;
+	char infix[max], postfix[max],temp;
 	printf("Enter f(x) operator: ");
 	scanf("%s",infix);
 	printf("Enter x value: ");
 	scanf("%lf",&f);
-	infixToPrefix(infix,prefix);
+	infixToPostfix(infix,postfix);
 	printf("in Reverse Polish notation: ");
-	puts(prefix);
-	f=calculator(prefix,f);
+	puts(postfix);
+	f=calculator(postfix,f);
 	printf("The result: %0.1lf\n",f);
 }
 
 
 
 
-void infixToPrefix(char infix[max], char prefix[max]){
+void infixToPostfix(char infix[max], char postfix[max]){
 	emptyStack();
 	int i=0,j=0;
 	while(infix[i]!='\0'){
 		if(isOperator(infix[i])!=1){ // if is operand
-			prefix[j++]=infix[i];
+			postfix[j++]=infix[i];
 		}else if(infix[i]== '(')
 			push(infix[i]);
 		else if(infix[i]==')'){
 			while(stack[top]!='(')
-				prefix[j++]=pop();
+				postfix[j++]=pop();
 			top--;
 		}else{
 			while(top!=-1 && prcd(infix[i])<=prcd(stack[top]))
-				prefix[j++]=pop();
+				postfix[j++]=pop();
 			push(infix[i]);
 		}
 		i++;
 	}
 	while(top!=-1)
 		if(stack[top]!=')' || stack[top]!='(')
-			prefix[j++]=pop();
+			postfix[j++]=pop();
 		else top--;
-	prefix[j]='\0';
+	postfix[j]='\0';
 }
-
-// void infixToPrefix(char infix[max], char prefix[max]){
-// 	emptyStack();
-// 	int i=0,j=0;
-// 	while(infix[i]!='\0'){
-// 		if(isOperator(infix[i])==1){
-// 			if(top!=-1 && infix[i]==')')
-// 				while(stack[top]!='(' )
-// 					prefix[j++]=pop();
-// 			else
-// 			while(top!=-1 && prcd(infix[i])<=prcd(stack[top]))
-// 				prefix[j++]=pop();
-// 			push(infix[i]);
-// 		}else if(isOperator(infix[i])!=1) 
-// 			prefix[j++] = infix[i];
-// 		else if(infix[i]=='(')
-// 			push(infix[i]);
-// 		else if(infix[i]==')'){
-// 			do{
-// 				prefix[j]=pop();
-// 			}while(prefix[j]!='(');
-// 		}
-// 		i++;
-// 	}	
-// 	while(top!=-1)
-// 		prefix[j++]=pop();
-// 	prefix[j]='\0';
-// }
 
 void reverse(char array[max]){
 	int i,j;
@@ -167,22 +139,22 @@ int isOperator(char sym){
 	        return 0;
 	    }
 }
-double calculator(char prefix[max],double x){
+double calculator(char postfix[max],double x){
 	int i=0;
 	double val1,val2,sum=0.0;
 	double tmp;
 	emptyStack();
-	while(prefix[i]!='\0'){
-		if(isOperator(prefix[i])!=1){
-			if(prefix[i]!='x')
-				pushDb(prefix[i]-48);
+	while(postfix[i]!='\0'){
+		if(isOperator(postfix[i])!=1){
+			if(postfix[i]!='x')
+				pushDb(postfix[i]-48);
 			else
 				pushDb(x);
 		}
 		else{
 			val1=popDb();
 			val2=popDb();
-			switch(prefix[i]){
+			switch(postfix[i]){
 				case '+':
 					sum=val1+val2;
 					break;
