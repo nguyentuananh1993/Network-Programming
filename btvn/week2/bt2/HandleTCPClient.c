@@ -12,7 +12,7 @@ void HandleTCPClient(int clntSocket){
 		DieWithError("recv() failed");
 	// send recieved string and receive again until end of transmission
 	while(recvMsgSize > 0){
-		//echo message back to client
+		//echo message back to client and convert character to lowercase
 		int i=0;
 		for(i=0;i<strlen(echoBuffer);i++){
 			echoBuffer[i]=tolower(echoBuffer[i]);

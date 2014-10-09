@@ -13,16 +13,13 @@ void HandleTCPClient(int clntSocket){
 	// send recieved string and receive again until end of transmission
 	while(recvMsgSize > 0){
 		//echo message back to client
-		int i=0;
-		for(i=0;i<strlen(echoBuffer);i++){
-			echoBuffer[i]=tolower(echoBuffer[i]);
-		}
 		if(send(clntSocket,echoBuffer,recvMsgSize,0)!= recvMsgSize)
 			DieWithError("send() failed");
 
 		// see if there is more data to receive
 		if((recvMsgSize = recv(clntSocket,echoBuffer,RCVBUFSIZE,0))<0)
 			DieWithError("recv() failed");
+		
 	}
 	close(clntSocket);
 }

@@ -1,11 +1,11 @@
-#include <stdio.h> // for printf() and fprintf();
+#include <stdio.h> 
 #include <sys/socket.h>	// for socket(), bind(), and connect();
 #include <arpa/inet.h>	// for sockaddr_in and inet_ntoa();
 #include <stdlib.h> // for atoi();
 #include <string.h> // for memset();
 #include <unistd.h> // for close();
-#include "DieWithError.c"
-#include "HandleTCPClient.c"
+#include "DieWithError.c" // for exception
+#include "HandleTCPClient.c" // sent message to client
 #define MAXPEDING 5 // maximum outstanding connection request;
 int check=0; // check value
 void HandleTCPClient(int clntSocket);// tcp client handling function
@@ -44,10 +44,9 @@ int main(int argc, char * argv[]){
 		/*set the size of the in-out parameter*/
 		clntLen = sizeof(echoClntAddr);
 		/* wait for a client to connect */
-		printf("%d\n",check++);
+		printf("Session: %d.\n",check++);
 		if((clntSock = accept(servSock,(struct sockaddr *) &echoClntAddr,&clntLen))<0)
-			printf("%d\n",check++);
-			//DieWithError("accept() failed");
+			DieWithError("accept() failed");
 		/* clntSock is connected to a cdlient! */
 		printf("Handling client %s\n",inet_ntoa(echoClntAddr.sin_addr));
 

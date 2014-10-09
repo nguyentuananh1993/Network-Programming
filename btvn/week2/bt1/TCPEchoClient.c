@@ -1,4 +1,4 @@
-#include <stdio.h> /* for printf() and fprintf();*/
+#include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -19,16 +19,16 @@ int main(int argc, char* argv[]){
 	unsigned int echoStringLen;	// length of string to echo
 	int bytesRcvd, totalBytesRcvd;	// bytes read in single recv() and total bytes read
 
-	if((argc<2)|| (argc >3)){	// test for correct number of arguments
-		fprintf(stderr,"Usage: %s <Server IP>[<Echo Port>]\n",argv[0]);
+	if((argc<1)|| (argc >2)){	// test for correct number of arguments
+		fprintf(stderr,"Usage: %s [<Echo Port>]\n",argv[0]);
 		exit(1);
 	}
 
-	servIP = argv[1]; //first arg server ip address dotted quad
+	servIP = "127.0.0.1"; //loopback IP
 	//echoString = argv[2]; //second arg:string to echo
 
-	if(argc == 3)
-		echoServPort = atoi(argv[2]); //use given port, if any
+	if(argc == 2)
+		echoServPort = atoi(argv[1]); //use given port, if any
 	else
 		echoServPort = 7; // 7 is the well-known port for the echo service
 
@@ -45,9 +45,12 @@ int main(int argc, char* argv[]){
 	if(connect(sock,(struct sockaddr*) &echoServAddr,sizeof(echoServAddr))<0)
 		DieWithError("connect() failed");
 	while(1){
+		// get user input message from stdin
 		printf("Type a message: ");
-		scanf("%s",echoString);
-		while(getchar()!='\n');
+		memset(echoString, 0, sizeof(echoString));
+        fgets(echoString, sizeof(echoString), stdin);
+        echoString[strlen(echoString) - 1] = 0;
+		// close connection when input is "Q" or "q"
 		if(strcmp(echoString,"Q")==0 || strcmp(echoString,"q")==0)
 			DieWithError("Exit");
 		echoStringLen = strlen(echoString); //determine input length

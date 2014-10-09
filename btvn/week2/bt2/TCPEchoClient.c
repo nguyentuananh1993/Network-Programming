@@ -1,4 +1,4 @@
-#include <stdio.h> /* for printf() and fprintf();*/
+#include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include "DieWithError.c"
 #define RCVBUFSIZE 32
-#define MAX 6
 void DieWithError(char* errorMessage);
 
 int main(int argc, char* argv[]){
@@ -15,26 +14,28 @@ int main(int argc, char* argv[]){
 	struct sockaddr_in echoServAddr;	// echo server address
 	unsigned short echoServPort;	// echo server port
 	char*servIP;	// server ip address
-	char*echoString;	// string to send to echo server
+	char echoString[RCVBUFSIZE];	// string to send to echo server
 	char echoBuffer[RCVBUFSIZE];	// buffer for echo string
 	unsigned int echoStringLen;	// length of string to echo
 	int bytesRcvd, totalBytesRcvd;	// bytes read in single recv() and total bytes read
 	unsigned int counter=0;
-	if((argc<4)|| (argc >5)){	// test for correct number of arguments
-		fprintf(stderr,"Usage: %s <Server IP> <File Input> <File Output> [<Echo Port>]\n",argv[0]);
+	if((argc<3)|| (argc >4)){	// test for correct number of arguments
+		fprintf(stderr,"Usage: %s <File Input> <File Output> [<Echo Port>]\n",argv[0]);
 		exit(1);
 	}
-	echoString=(char*)malloc(sizeof(char)*(MAX+1));
-	servIP = argv[1]; //first arg server ip address dotted quad
-	//echoString = argv[2]; //second arg:string to echo
-  	if ((input = fopen (argv[2],"r"))==NULL){
+	// assign loopback IP
+	servIP="127.0.0.1";
+	// open file to read
+  	if ((input = fopen (argv[1],"r"))==NULL){
   		DieWithError("Input file error. Can't open to read.");
   	}
-  	if ((output = fopen (argv[3],"w"))==NULL){
+
+  	// open file to write
+  	if ((output = fopen (argv[2],"w"))==NULL){
   		DieWithError("Output file error. Can't open to write.");
   	}
-	if(argc == 5)
-		echoServPort = atoi(argv[4]); //use given port, if any
+	if(argc == 4)
+		echoServPort = atoi(argv[3]); //use given port, if any
 	else
 		echoServPort = 7; // 7 is the well-known port for the echo service
 
@@ -50,24 +51,22 @@ int main(int argc, char* argv[]){
 	//establish the connection to the echo server
 	if(connect(sock,(struct sockaddr*) &echoServAddr,sizeof(echoServAddr))<0)
 		DieWithError("connect() failed");
-	while(fgets (echoString, MAX, input)!=NULL){
-		
+	while(fgets (echoString, RCVBUFSIZE, input)!=NULL){// a loop read 32 character from input until end of file
 		echoStringLen = strlen(echoString); //determine input length
-		// printf("Sent size: %d bytes.\n",echoStringLen);
+		
 		//send the string to the server
 		if(send(sock, echoString, echoStringLen, 0) != echoStringLen)
 			DieWithError("send() sent a different number of byte than expected");
 
 		//receive the same string back from the server
 		totalBytesRcvd = 0;
-		// printf("Received: ");	// setup to print the echoed string
 		while(totalBytesRcvd <echoStringLen){
 			/* Receive up to the buffer size(minus 1 to leave space for a null terminator) bytes form the sender */
 			if((bytesRcvd = recv(sock, echoBuffer,RCVBUFSIZE -1, 0))<=0)
 				DieWithError("recv() failed or connection closed prematurely");
 			totalBytesRcvd +=bytesRcvd;	// keep tally of total bytes
 			echoBuffer[bytesRcvd] ='\0'; //terminate the string!
-			// printf("%s - %d bytes \n",echoBuffer,bytesRcvd);
+			
 		}
 		fprintf(output,"%s",echoBuffer);
 		counter+=totalBytesRcvd;
@@ -75,7 +74,6 @@ int main(int argc, char* argv[]){
 	printf("Total Bytes Sent (Receive): %d bytes.\n",counter);
 	fclose(input);
 	fclose(output);
-	printf("\n");//print a final linefeed
-	close(sock);
+	close(sock);// close client
 	exit(0);
 }

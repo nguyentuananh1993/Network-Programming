@@ -44,10 +44,9 @@ int main(int argc, char * argv[]){
 		/*set the size of the in-out parameter*/
 		clntLen = sizeof(echoClntAddr);
 		/* wait for a client to connect */
-		printf("%d\n",check++);
+		printf("Session: %d.\n",check++);
 		if((clntSock = accept(servSock,(struct sockaddr *) &echoClntAddr,&clntLen))<0)
-			printf("%d\n",check++);
-			//DieWithError("accept() failed");
+			DieWithError("accept() failed");
 		/* clntSock is connected to a cdlient! */
 		printf("Handling client %s\n",inet_ntoa(echoClntAddr.sin_addr));
 
