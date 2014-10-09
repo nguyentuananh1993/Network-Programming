@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
 		if(strcmp(echoString,"Q")==0 || strcmp(echoString,"q")==0)
 			DieWithError("Exit");
 		echoStringLen = strlen(echoString); //determine input length
-
+		printf("Sent size: %d bytes.\n",echoStringLen);
 		//send the string to the server
 		if(send(sock, echoString, echoStringLen, 0) != echoStringLen)
 			DieWithError("send() sent a different number of byte than expected");
